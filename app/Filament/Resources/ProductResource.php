@@ -29,14 +29,20 @@ class ProductResource extends Resource
     {
         return $form
             ->schema([
+                /**
+                 *Display 'Hello' with color bar
+                */
                 Card::make([
                     ViewField::make('status_bar')
-        ->label('Status')
-        ->view('filament.fields.status-bar')
-        ->extraAttributes([
-            'color' => fn ($record) => $record->color,
-        ]),
-    ]),
+                    ->label('Status')
+                    ->view('filament.fields.status-bar')
+                    ->extraAttributes([
+                        'color' => fn ($record) => $record->color,
+                    ]),
+                ]),
+                /**
+                 *Input fields of product
+                */
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('description')
@@ -45,23 +51,23 @@ class ProductResource extends Resource
                     ->relationship('color', 'name')
                     ->required(),
                 Select::make('type_id')
-        ->label('Type')
-        ->relationship('types', 'name') 
-        ->afterStateUpdated(fn (callable $set) => $set('category_id', null)), 
-    Select::make('product_category_id')
-        ->label('Category')
-        ->options(function (callable $get) {
-            $typeId = $get('type_id');
+                    ->label('Type')
+                    ->relationship('types', 'name') 
+                    ->afterStateUpdated(fn (callable $set) => $set('category_id', null)), 
+                Select::make('product_category_id')
+                    ->label('Category')
+                    ->options(function (callable $get) {
+                        $typeId = $get('type_id');
 
-            if (!$typeId) {
-                return ProductCategory::pluck('name', 'id');
-            }
+                        if (!$typeId) {
+                            return ProductCategory::pluck('name', 'id');
+                        }
 
-            return ProductCategory::whereHas('types', function ($q) use ($typeId) {
-                $q->where('product_types.id', $typeId);
-            })->pluck('name', 'id');
-        })
-        ->reactive(),
+                        return ProductCategory::whereHas('types', function ($q) use ($typeId) {
+                            $q->where('product_types.id', $typeId);
+                        })->pluck('name', 'id');
+                    })
+                    ->reactive(),
                 
             ]);
     }

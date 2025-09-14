@@ -25,6 +25,9 @@ class ProductColorResource extends Resource
     {
         return $form
             ->schema([
+                /**
+                 *Input fields of product_color
+                */
                 TextInput::make('name')
                 ->required(),
                 TextInput::make('description')

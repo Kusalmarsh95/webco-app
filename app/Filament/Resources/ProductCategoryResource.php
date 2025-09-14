@@ -25,6 +25,9 @@ class ProductCategoryResource extends Resource
     {
         return $form
             ->schema([
+                /**
+                 *Input fields of product_category
+                */
                 TextInput::make('name')
                 ->required(),
                 TextInput::make('description')

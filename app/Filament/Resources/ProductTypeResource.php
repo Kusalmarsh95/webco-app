@@ -29,68 +29,87 @@ class ProductTypeResource extends Resource
     {
         return $form
             ->schema([
+                /**
+                 * Input fields of product_types 
+                 */
                 TextInput::make('name')
                 ->required(),
-                TextInput::make('api_unique_number'),
-                TextInput::make('street_number')->label('Street Number'),
-TextInput::make('street_name')->required(),
-TextInput::make('street_type')->label('Street Type')->required(),
-TextInput::make('suburb')->required(),
-TextInput::make('postcode')->required(),
-Select::make('state')
-    ->options([
-        'NSW' => 'NSW',
-        'VIC' => 'VIC',
-        'QLD' => 'QLD',
-        'WA'  => 'WA',
-    ])
-    ->required(),
-               TextInput::make('search')
-               ->suffixAction(
-        fn ($state, callable $set, $get) => Action::make('fetch')
-            ->icon('heroicon-o-cloud')
-            ->requiresConfirmation()
-            ->action(function () use ($set, $get) {
             
-                $loginResponse = Http::post('https://extranet.asmorphic.com/api/login', [
-                    'email' => 'project-test@projecttest.com.au',
-                    'password' => 'oxhyV9NzkZ^02MEB',
-                ]);
+                TextInput::make('api_unique_number'),
 
-                if (! $loginResponse->successful()) {
-                    throw new \Exception('Failed to login to API');
-                }
+                /**
+                 *Input fields for address API.
+                 */
+                TextInput::make('street_number')
+                ->label('Street Number'),
+                TextInput::make('street_name')
+                ->required(),
+                TextInput::make('street_type')
+                ->label('Street Type')
+                ->required(),
+                TextInput::make('suburb')
+                ->required(),
+                TextInput::make('postcode')
+                ->required(),
+                Select::make('state')
+                    ->options([
+                        'NSW' => 'NSW',
+                        'VIC' => 'VIC',
+                        'QLD' => 'QLD',
+                        'WA'  => 'WA',
+                    ])
+                    ->required(),
+                            TextInput::make('search')
+                            ->suffixAction(
+                        fn ($state, callable $set, $get) => Action::make('fetch')
+                            ->icon('heroicon-o-cloud')
+                            ->requiresConfirmation()
+                            ->action(function () use ($set, $get) {
+                                /**
+                                 *API login credentials
+                                */
+                                $loginResponse = Http::post('https://extranet.asmorphic.com/api/login', [
+                                    'email' => 'project-test@projecttest.com.au',
+                                    'password' => 'oxhyV9NzkZ^02MEB',
+                                ]);
 
-                $token = $loginResponse->json('result.token');
+                                if (! $loginResponse->successful()) {
+                                    throw new \Exception('Failed to login to API');
+                                }
 
-                $streetNumber = $get('street_number');
-                $streetName   = $get('street_name');
-                $streetType   = $get('street_type');
-                $suburb       = $get('suburb');
-                $postcode     = $get('postcode');
-                $state        = $get('state');
+                                $token = $loginResponse->json('result.token');
 
-                $response = Http::withToken($token)
-                    ->acceptJson()
-                    ->post('https://extranet.asmorphic.com/api/orders/findaddress', [
-                        'company_id'    => 17,
-                        'street_number' => $streetNumber,
-                        'street_name'   => $streetName,
-                        'street_type'   => $streetType,
-                        'suburb'        => $suburb,
-                        'postcode'      => $postcode,
-                        'state'         => $state,
-                    ]);
+                                $streetNumber = $get('street_number');
+                                $streetName   = $get('street_name');
+                                $streetType   = $get('street_type');
+                                $suburb       = $get('suburb');
+                                $postcode     = $get('postcode');
+                                $state        = $get('state');
 
-                if (! $response->successful()) {
-                    throw new \Exception('Address API request failed');
-                }
+                                /**
+                                 *API login of find address
+                                */
+                                $response = Http::withToken($token)
+                                    ->acceptJson()
+                                    ->post('https://extranet.asmorphic.com/api/orders/findaddress', [
+                                        'company_id'    => 17,
+                                        'street_number' => $streetNumber,
+                                        'street_name'   => $streetName,
+                                        'street_type'   => $streetType,
+                                        'suburb'        => $suburb,
+                                        'postcode'      => $postcode,
+                                        'state'         => $state,
+                                    ]);
 
-                $firstDirectoryId = $response->json('data.0.DirectoryIdentifier') ?? 'NOT_FOUND';
+                                if (! $response->successful()) {
+                                    throw new \Exception('Address API request failed');
+                                }
 
-                $set('search', $firstDirectoryId);
-            })
-        ),
+                                $firstDirectoryId = $response->json('data.0.DirectoryIdentifier') ?? 'NOT_FOUND';
+
+                                $set('search', $firstDirectoryId);
+                            })
+                        ),
             ]);
     }
 

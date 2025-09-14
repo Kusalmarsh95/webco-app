@@ -8,6 +8,9 @@ class ProductType extends Model
 {
     protected $fillable = ['name','api_unique_number'];
 
+    /**
+     *relationship for polymorphic pivot
+    */
     public function products()
     {
         return $this->morphedByMany(Product::class, 'type_assignment', 'type_assignments', 'type_id', 'type_assignment_id');
